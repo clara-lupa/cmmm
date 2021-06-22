@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+
+    <title>Vorkaufsrecht Berlin</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="docs/images/favicon.ico"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  </head>
+  <body>
+
+    <div id="mapid" style="width: 1900px; height: 950px;"></div>
+    <script>
+      var map = L.map("mapid").setView([52.541301, 13.3341968], 12);
+
+      L.tileLayer(
+        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
+        {
+          maxZoom: 18,
+          attribution:
+            'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          id: "mapbox/streets-v11",
+          tileSize: 512,
+          zoomOffset: -1
+        }
+      ).addTo(map);
+
+      // create 3 types of markers in 3 colors
+
+      var LeafIcon = L.Icon.extend({
+        options: {
+          iconSize: [25, 41],
+          iconAnchor: [10, 41],
+          popupAnchor: [2, -40]
+        }
+      });
+
+      // Read markers data from data.csv
+      $.get("./data.csv", function (csvString) {
+        // Use PapaParse to convert string to array of objects
+        var data = Papa.parse(csvString, { header: true, dynamicTyping: true })
+          .data;
+
+        var greenIcon = new LeafIcon({
+            iconUrl:
+              "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png"
+          }),
+          yellowIcon = new LeafIcon({
+            iconUrl:
+              "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png"
+          }),
+          redIcon = new LeafIcon({
+            iconUrl:
+              "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
+          });
+        blueIcon = new LeafIcon({
+          iconUrl:
+            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png"
+        });
+
+        // For each row in data, create a marker and add it to the map
+        // For each row, columns `Latitude`, `Longitude`, and `Title` are required
+        for (var i in data) {
+          var row = data[i];
+
+          const marker = L.marker([row.lat, row.long], {
+            icon: row.result === "AV" ? greenIcon : blueIcon
+          })
+            .addTo(map)
+            .bindPopup(row.display_na)
+            .openPopup();
+        }
+      });
+
+      // Um einen neuen Marker hinzu zufügen, muss dafür eine neue Constante geschrieben werden
+      // const marker = L.marker([row.lat, row.long], {
+      //    icon: row.result === "hier neuen Wert"
+      // })
+
+
+
+    </script>
+  </body>
+</html>
